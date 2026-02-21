@@ -6,6 +6,7 @@ services:
     buildCommand: npm install && npm install --prefix client && npm run build
     # Serve everything from the Express server (it serves client/dist in production)
     startCommand: node server/index.js
+    plan: free
     envVars:
       - key: NODE_ENV
         value: production
