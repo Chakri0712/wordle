@@ -2,8 +2,8 @@ services:
   - type: web
     name: wordle-multiplayer
     runtime: node
-    # Install root deps (express, socket.io, concurrently) then build the client
-    buildCommand: npm install && npm install --prefix client && npm run build
+    # Minimal build command for backend only
+    buildCommand: npm install
     # Serve everything from the Express server (it serves client/dist in production)
     startCommand: node server/index.js
     plan: free

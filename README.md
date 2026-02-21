@@ -47,6 +47,24 @@ npm run dev
 
 The server will run on `http://localhost:3001` and the client on `http://localhost:5173`.
 
+## 🌐 Deployment (Hybrid Mode)
+
+For the best performance, host the **Frontend on Vercel** and the **Backend on Render**.
+
+### 1. Backend (Render)
+- **Repo Root**: `./`
+- **Build Command**: `npm install`
+- **Start Command**: `node server/index.js`
+- **Environment Variables**: `NODE_ENV=production`
+
+### 2. Frontend (Vercel)
+- **Framework Preset**: Vite
+- **Root Directory**: `client`
+- **Build Command**: `npm run build`
+- **Output Directory**: `dist`
+- **Environment Variables**: 
+    - `VITE_BACKEND_URL`: (Your Render Service URL, e.g., `https://wordle-multiplayer.onrender.com`)
+
 ## 📁 Project Structure
 
 - `client/`: React application (Vite-based).
