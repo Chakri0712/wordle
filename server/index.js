@@ -14,10 +14,13 @@ const PORT = process.env.PORT || 3001;
 
 // Serve React build in production
 if (process.env.NODE_ENV === 'production') {
-    app.use(express.static(path.join(__dirname, '../client/dist')));
-    app.get('*', (req, res) => {
-        res.sendFile(path.join(__dirname, '../client/dist/index.html'));
-    });
+    const distPath = path.join(__dirname, '../client/dist');
+    if (require('fs').existsSync(distPath)) {
+        app.use(express.static(distPath));
+        app.get('(.*)', (req, res) => {
+            res.sendFile(path.join(distPath, 'index.html'));
+        });
+    }
 }
 
 io.on('connection', (socket) => {
