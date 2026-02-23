@@ -1,47 +1,47 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
 
-/* ─── Design Tokens ─── */
+/* ─── Design Tokens — splitEx Black + Gold ─── */
 :root {
-  --bg: #0f0f10;
-  --bg2: #141416;
-  --surface: #1c1c1f;
-  --surface2: #252529;
-  --surface3: #2e2e33;
-  --border: #35353a;
-  --border-light: #45454c;
+  --bg: #0a0a0b;
+  --bg2: #0e0e0f;
+  --surface: #141414;
+  --surface2: #1a1a1a;
+  --surface3: #222222;
+  --border: #2a2510;
+  --border-light: #f5c518;
 
-  --tile-empty: #2a2a2e;
-  --tile-filled: #3a3a3e;
+  --tile-empty: #1e1e1e;
+  --tile-filled: #2a2a18;
   --tile-correct: #538d4e;
-  --tile-present: #b59f3b;
-  --tile-absent: #3a3a3c;
+  --tile-present: #f5c518;
+  --tile-absent: #1e1e1e;
 
-  --active: #1a6fc4;
-  --active-light: #4a9fe8;
-  --active-glow: rgba(26, 111, 196, 0.35);
+  --active: #f5c518;
+  --active-light: #ffe066;
+  --active-glow: rgba(245, 197, 24, 0.5);
 
   --correct-glow: rgba(83, 141, 78, 0.3);
-  --present-glow: rgba(181, 159, 59, 0.3);
+  --present-glow: rgba(245, 197, 24, 0.5);
 
   --text: #f0f0f2;
-  --text-muted: #7a7a82;
-  --text-dim: #4a4a52;
+  --text-muted: #7a7a6a;
+  --text-dim: #4a4a3a;
 
-  --accent: #538d4e;
-  --accent-light: #6cbf65;
+  --accent: #f5c518;
+  --accent-light: #ffe066;
   --danger: #e05555;
   --danger-light: #ff7070;
 
-  --radius-sm: 4px;
-  --radius: 8px;
-  --radius-lg: 14px;
-  --radius-xl: 20px;
+  --radius-sm: 0px;
+  --radius: 2px;
+  --radius-lg: 2px;
+  --radius-xl: 2px;
 
   --font: 'Inter', system-ui, sans-serif;
 
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4);
-  --shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
-  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.7);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.6);
+  --shadow: 0 4px 16px rgba(0, 0, 0, 0.7);
+  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.85);
 }
 
 /* ─── Reset ─── */
@@ -141,13 +141,13 @@ a {
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, #538d4e, #3d7039);
-  color: #fff;
-  box-shadow: 0 2px 12px rgba(83, 141, 78, 0.4);
+  background: linear-gradient(135deg, #f5c518, #d4a017);
+  color: #0a0a0b;
+  box-shadow: 0 2px 16px rgba(245, 197, 24, 0.55);
 }
 
 .btn-primary:hover:not(:disabled) {
-  box-shadow: 0 4px 20px rgba(83, 141, 78, 0.55);
+  box-shadow: 0 4px 28px rgba(245, 197, 24, 0.75);
   transform: translateY(-1px);
 }
 
@@ -239,8 +239,8 @@ a {
 .tile.present {
   background: var(--tile-present);
   border-color: var(--tile-present);
-  box-shadow: 0 0 12px rgba(181, 159, 59, 0.5);
-  color: #fff;
+  box-shadow: 0 0 16px rgba(245, 197, 24, 0.7);
+  color: #0a0a0b;
 }
 
 .tile.absent {
@@ -460,7 +460,7 @@ a {
   left: 0;
   right: 0;
   height: 2px;
-  background: linear-gradient(90deg, var(--tile-correct), var(--tile-present), var(--active));
+  background: linear-gradient(90deg, #d4a017, #ffe066, #f5c518);
 }
 
 .modal h2 {
@@ -502,8 +502,8 @@ a {
   align-items: center;
   justify-content: center;
   padding: 24px;
-  background: radial-gradient(ellipse at 30% 20%, rgba(83, 141, 78, 0.08) 0%, transparent 60%),
-    radial-gradient(ellipse at 70% 80%, rgba(26, 111, 196, 0.08) 0%, transparent 60%),
+  background: radial-gradient(ellipse at 30% 20%, rgba(245, 197, 24, 0.1) 0%, transparent 60%),
+    radial-gradient(ellipse at 70% 80%, rgba(245, 197, 24, 0.05) 0%, transparent 60%),
     var(--bg);
 }
 
@@ -529,7 +529,8 @@ a {
   left: 0;
   right: 0;
   height: 3px;
-  background: linear-gradient(90deg, var(--tile-correct), var(--tile-present), var(--active));
+  background: linear-gradient(90deg, #d4a017, #ffe066, #f5c518);
+  box-shadow: 0 0 12px rgba(245, 197, 24, 0.6);
 }
 
 .home-title {
@@ -540,11 +541,12 @@ a {
   font-size: 2.8rem;
   font-weight: 900;
   letter-spacing: 10px;
-  background: linear-gradient(135deg, var(--accent-light) 0%, var(--tile-present) 45%, var(--active-light) 100%);
+  background: linear-gradient(135deg, #ffe066 0%, #f5c518 50%, #d4a017 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
   line-height: 1;
+  filter: drop-shadow(0 0 18px rgba(245, 197, 24, 0.6));
 }
 
 .home-title p {
@@ -607,7 +609,7 @@ a {
   flex-direction: column;
   align-items: center;
   gap: 28px;
-  background: radial-gradient(ellipse at 50% 0%, rgba(26, 111, 196, 0.08) 0%, transparent 55%),
+  background: radial-gradient(ellipse at 50% 0%, rgba(245, 197, 24, 0.09) 0%, transparent 55%),
     var(--bg);
 }
 
@@ -862,8 +864,8 @@ a {
 }
 
 .turn-banner.your-turn {
-  background: rgba(26, 111, 196, 0.18);
-  border: 1.5px solid rgba(74, 159, 232, 0.5);
+  background: rgba(245, 197, 24, 0.1);
+  border: 1.5px solid rgba(245, 197, 24, 0.6);
   color: var(--active-light);
   animation: glow-pulse 2s ease infinite alternate, slideDown 0.28s ease;
 }
@@ -877,7 +879,7 @@ a {
 .turn-banner.round-over {
   background: rgba(83, 141, 78, 0.15);
   border: 1.5px solid rgba(108, 191, 101, 0.4);
-  color: var(--accent-light);
+  color: #6cbf65;
 }
 
 /* ══════════════════════════════════════
@@ -942,7 +944,7 @@ a {
 
 .my-guess-row .guess-tiles .tile.filled {
   border-color: var(--active);
-  box-shadow: 0 0 0 1px var(--active-glow);
+  box-shadow: 0 0 0 1px var(--active-glow), 0 0 10px rgba(245, 197, 24, 0.35);
 }
 
 /* ══════════════════════════════════════
@@ -1019,12 +1021,12 @@ a {
 
 .key.present {
   background: var(--tile-present);
-  color: #fff;
-  box-shadow: 0 2px 0 #7a6820, 0 0 10px rgba(181, 159, 59, 0.3);
+  color: #0a0a0b;
+  box-shadow: 0 2px 0 #a07810, 0 0 14px rgba(245, 197, 24, 0.55);
 }
 
 .key.absent {
-  background: #252527;
+  background: #1a1a1a;
   color: var(--text-dim);
   box-shadow: 0 2px 0 rgba(0, 0, 0, 0.5);
 }
@@ -1052,7 +1054,7 @@ a {
   bottom: 20%;
   width: 0;
   background: var(--active);
-  border-radius: 0 2px 2px 0;
+  border-radius: 0;
   transition: width 0.2s ease;
 }
 
@@ -1066,7 +1068,7 @@ a {
 
 .player-list-item.active-player {
   color: var(--active-light);
-  background: rgba(26, 111, 196, 0.08);
+  background: rgba(245, 197, 24, 0.1);
 }
 
 .player-list-item.surrendered {
@@ -1151,9 +1153,10 @@ a {
 
 .timer-bar {
   height: 100%;
-  background: linear-gradient(90deg, var(--accent), var(--accent-light));
-  border-radius: 3px;
+  background: linear-gradient(90deg, #d4a017, #ffe066);
+  border-radius: 0;
   transition: width 0.95s linear;
+  box-shadow: 0 0 8px rgba(245, 197, 24, 0.5);
 }
 
 .timer-bar.urgent {
@@ -1192,11 +1195,11 @@ a {
 }
 
 .scoreboard-table tr:first-child td {
-  background: rgba(83, 141, 78, 0.07);
+  background: rgba(245, 197, 24, 0.08);
 }
 
 .medal-1 {
-  color: #ffd700;
+  color: #f5c518;
   font-size: 1.1rem;
 }
 
@@ -1212,8 +1215,8 @@ a {
 
 .round-word-reveal {
   display: inline-block;
-  background: rgba(83, 141, 78, 0.12);
-  border: 1px solid rgba(83, 141, 78, 0.3);
+  background: rgba(245, 197, 24, 0.1);
+  border: 1px solid rgba(245, 197, 24, 0.5);
   border-radius: var(--radius);
   padding: 6px 18px;
   font-size: 1.6rem;
@@ -1221,6 +1224,7 @@ a {
   letter-spacing: 10px;
   color: var(--accent-light);
   margin: 8px 0 4px;
+  box-shadow: 0 0 12px rgba(245, 197, 24, 0.2);
 }
 
 /* ══════════════════════════════════════
@@ -1267,7 +1271,7 @@ a {
   }
 
   .player-list-item.active-player {
-    background: rgba(26, 111, 196, 0.15);
+    background: rgba(245, 197, 24, 0.12);
     border-radius: var(--radius);
   }
 
@@ -1344,30 +1348,30 @@ a {
    LIGHT MODE
 ══════════════════════════════════════ */
 [data-theme="light"] {
-  --bg: #f4f4f5;
-  --bg2: #ebebed;
+  --bg: #f5f0e8;
+  --bg2: #ece7da;
   --surface: #ffffff;
-  --surface2: #f0f0f2;
-  --surface3: #e4e4e8;
-  --border: #d0d0d8;
-  --border-light: #b0b0bc;
+  --surface2: #f5f0e8;
+  --surface3: #ece5d4;
+  --border: #d4c9a8;
+  --border-light: #f5c518;
 
-  --tile-empty: #e8e8ec;
-  --tile-filled: #d8d8de;
-  --tile-absent: #c5c5cc;
+  --tile-empty: #e8e0cc;
+  --tile-filled: #d8ceb0;
+  --tile-absent: #c8bea0;
 
-  --text: #1a1a1e;
-  --text-muted: #56565e;
-  --text-dim: #9090a0;
+  --text: #1a1a10;
+  --text-muted: #5a5640;
+  --text-dim: #9a9070;
 
-  --active-glow: rgba(26, 111, 196, 0.2);
+  --active-glow: rgba(245, 197, 24, 0.3);
   --correct-glow: rgba(83, 141, 78, 0.2);
-  --present-glow: rgba(181, 159, 59, 0.2);
+  --present-glow: rgba(245, 197, 24, 0.3);
 }
 
 [data-theme="light"] .toast {
-  background: rgba(20, 20, 24, 0.95);
-  color: #f0f0f2;
+  background: rgba(20, 18, 10, 0.95);
+  color: #f0f0e8;
 }
 
 [data-theme="light"] .modal {
