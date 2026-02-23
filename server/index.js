@@ -114,13 +114,16 @@ io.on('connection', (socket) => {
         socket.leave(roomCode);
     });
 
-    socket.on('disconnect', () => {
-        console.log('disconnected:', socket.id);
+    socket.on('disconnecting', () => {
         socket.rooms.forEach(roomCode => {
             if (roomCode !== socket.id) {
                 gm.removePlayer(roomCode, socket.id, io);
             }
         });
+    });
+
+    socket.on('disconnect', () => {
+        console.log('disconnected:', socket.id);
     });
 });
 

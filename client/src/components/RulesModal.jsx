@@ -1,7 +1,7 @@
 export default function RulesModal({ onClose }) {
     return (
         <div className="modal-overlay" id="rules-modal" onClick={e => e.target === e.currentTarget && onClose()}>
-            <div className="modal" style={{ maxWidth: 560, textAlign: 'left' }}>
+            <div className="modal" style={{ maxWidth: 560, maxHeight: '90vh', overflowY: 'auto', textAlign: 'left' }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
                     <h2 style={{ marginBottom: 0 }}>📖 How to Play</h2>
                     <button onClick={onClose} className="btn btn-ghost" style={{ padding: '6px 12px' }}>✕</button>
@@ -50,9 +50,9 @@ export default function RulesModal({ onClose }) {
                     </section>
 
                     <section>
-                        <h3 style={{ fontSize: '0.78rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1.5, color: 'var(--text-muted)', marginBottom: 8 }}>Elimination</h3>
+                        <h3 style={{ fontSize: '0.78rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1.5, color: 'var(--text-muted)', marginBottom: 8 }}>End of Round</h3>
                         <p style={{ fontSize: '0.92rem', lineHeight: 1.6, color: 'var(--text-muted)' }}>
-                            3 consecutive timeouts eliminates you from the current round. Exhausting all 6 guesses also eliminates you. You can also voluntarily surrender using the 🏳 button.
+                            The round ends when a player guesses the word correctly, or the global Round Time runs out. You have infinite guesses. Missing a turn timer skips your turn but does not eliminate you. You can voluntarily surrender using the 🏳 button.
                         </p>
                     </section>
                 </div>

@@ -171,12 +171,16 @@ a {
 .btn-ghost {
   background: transparent;
   color: var(--text-muted);
-  border: 1px solid var(--border);
+  border: 1px solid transparent;
+  padding: 10px 14px;
+  /* Increased for mobile touch target */
+  min-height: 44px;
+  /* Apple minimum touch target */
 }
 
 .btn-ghost:hover:not(:disabled) {
   color: var(--text);
-  border-color: var(--border-light);
+  border-color: var(--border);
   background: var(--surface2);
 }
 
@@ -769,12 +773,13 @@ a {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 20px;
-  height: 52px;
+  padding: 16px 20px;
   background: var(--surface);
   border-bottom: 1px solid var(--border);
   gap: 12px;
   flex-shrink: 0;
+  flex-wrap: wrap;
+  /* Allow wrapping on small screens */
 }
 
 .topbar-round {
@@ -957,6 +962,8 @@ a {
   flex-direction: column;
   gap: 6px;
   padding: 12px 20px 16px;
+  padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+  /* iOS safe area */
   background: var(--surface);
   border-top: 1px solid var(--border);
   flex-shrink: 0;
@@ -1232,13 +1239,15 @@ a {
 ══════════════════════════════════════ */
 @media (max-width: 768px) {
   .game-body {
-    grid-template-columns: 1fr;
-    grid-template-rows: 1fr auto;
+    display: flex;
+    flex-direction: column;
   }
 
   .game-sidebar {
+    order: -1;
     border-left: none;
-    border-top: 1px solid var(--border);
+    border-top: none;
+    border-bottom: 1px solid var(--border);
     flex-direction: row;
     padding: 0;
     max-height: 70px;
@@ -1309,6 +1318,7 @@ a {
 
   .keyboard {
     padding: 8px 8px 12px;
+    padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
   }
 }
 
@@ -1319,12 +1329,25 @@ a {
     font-size: 1.1rem;
   }
 
+  .keyboard {
+    padding: 6px 4px 8px;
+    padding-bottom: calc(8px + env(safe-area-inset-bottom, 0px));
+    gap: 4px;
+  }
+
+  .keyboard-row {
+    gap: 4px;
+  }
+
   .key {
-    height: 46px;
+    height: 54px;
+    font-size: 0.95rem;
+    padding: 0;
   }
 
   .key.wide {
-    flex: 1.8;
+    flex: 1.4;
+    font-size: 0.8rem;
   }
 
   .home-card {

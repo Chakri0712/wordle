@@ -299,6 +299,10 @@ function endGame(roomCode, io) {
     if (!room) return;
     if (room.status === 'game_over') return; // guard against double-fire
     room.status = 'game_over';
+
+    clearTimeout(room.turnTimer);
+    clearTimeout(room.roundTimer);
+    room.roundEndTime = null;
     const finalScores = [...room.players].sort((a, b) => b.score - a.score);
     const winnerId = finalScores[0]?.id || null;
     io.to(roomCode).emit('game_over', { finalScores, winnerId });
@@ -307,6 +311,10 @@ function endGame(roomCode, io) {
 function playAgain(roomCode, io) {
     const room = rooms[roomCode];
     if (!room) return;
+
+    // Purge disconnected players when returning to lobby
+    room.players = room.players.filter(p => p.connected);
+
     room.players.forEach(p => { p.score = 0; p.surrendered = false; });
     room.currentRound = 0;
     room.guesses = [];
@@ -317,8 +325,16 @@ function playAgain(roomCode, io) {
 function removePlayer(roomCode, playerId, io) {
     const room = rooms[roomCode];
     if (!room) return;
-    const player = room.players.find(p => p.id === playerId);
-    if (player) player.connected = false;
+
+    const playerIndex = room.players.findIndex(p => p.id === playerId);
+    if (playerIndex !== -1) {
+        if (room.status === 'lobby') {
+            room.players.splice(playerIndex, 1);
+        } else {
+            room.players[playerIndex].connected = false;
+        }
+    }
+
     io.to(roomCode).emit('player_left', { playerId });
 
     // Host promotion

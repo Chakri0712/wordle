@@ -84,7 +84,7 @@ export default function Lobby() {
     return (
         <div className="lobby-page">
             {/* Top strip */}
-            <div style={{ position: 'absolute', top: 16, right: 20, display: 'flex', gap: 8 }}>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginBottom: 16 }}>
                 <button className="btn btn-ghost" style={{ padding: '6px 12px', fontSize: '0.8rem' }} onClick={() => setShowRules(true)}>📖 Rules</button>
                 <button className="btn btn-ghost" style={{ padding: '6px 12px', fontSize: '0.8rem' }} onClick={toggleTheme}>{theme === 'dark' ? '☀️' : '🌙'}</button>
                 <button className="btn btn-danger" style={{ padding: '6px 14px', fontSize: '0.8rem' }} onClick={handleLeave}>Leave</button>
