@@ -56,12 +56,13 @@ io.on('connection', (socket) => {
         });
     });
 
-    socket.on('update_settings', ({ roomCode, rounds, timerSeconds, difficulty, wordLength }) => {
+    socket.on('update_settings', ({ roomCode, rounds, timerSeconds, roundMinutes, difficulty, wordLength }) => {
         const room = gm.getRoom(roomCode);
         if (!room || room.hostId !== socket.id) return;
         const settings = {};
         if (rounds !== undefined) settings.totalRounds = rounds;
         if (timerSeconds !== undefined) settings.timerSeconds = timerSeconds;
+        if (roundMinutes !== undefined) settings.roundMinutes = roundMinutes;
         if (difficulty !== undefined) settings.difficulty = difficulty;
         if (wordLength !== undefined) settings.wordLength = wordLength;
         gm.updateSettings(roomCode, settings);

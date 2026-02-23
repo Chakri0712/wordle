@@ -1,7 +1,16 @@
-export default function Board({ sharedGuesses, totalGuessLimit, wordLength, currentInput, isMyTurn, shaking, myId, myName }) {
+import { useEffect, useRef } from 'react';
+
+export default function Board({ sharedGuesses, wordLength, currentInput, isMyTurn, shaking, myId, myName }) {
     const wl = wordLength || 5;
-    const total = totalGuessLimit || 6;
     const rows = [];
+    const bottomRef = useRef(null);
+
+    // Auto-scroll to bottom when guesses change or it becomes our turn
+    useEffect(() => {
+        if (bottomRef.current) {
+            bottomRef.current.scrollIntoView({ behavior: 'smooth' });
+        }
+    }, [sharedGuesses.length, isMyTurn, currentInput.length]);
 
     // Submitted guesses (all players, chronological)
     for (let r = 0; r < sharedGuesses.length; r++) {
@@ -26,8 +35,7 @@ export default function Board({ sharedGuesses, totalGuessLimit, wordLength, curr
     }
 
     // Active input row (current player's turn)
-    const inputRowIndex = sharedGuesses.length;
-    if (isMyTurn && inputRowIndex < total) {
+    if (isMyTurn) {
         rows.push(
             <div key="input" className="guess-row my-guess-row">
                 <span className="guess-row-label">{myName || 'You'}</span>
@@ -45,25 +53,23 @@ export default function Board({ sharedGuesses, totalGuessLimit, wordLength, curr
         );
     }
 
-    // Empty placeholder rows
-    const filledCount = sharedGuesses.length + (isMyTurn ? 1 : 0);
-    for (let r = filledCount; r < total; r++) {
-        rows.push(
-            <div key={`e-${r}`} className="guess-row">
-                <span className="guess-row-label"></span>
-                <div className="guess-tiles">
-                    {Array.from({ length: wl }, (_, i) => (
-                        <div key={i} className="tile empty-slot" />
-                    ))}
-                </div>
+    // Always render 1 empty placeholder row at the bottom for visual continuity
+    rows.push(
+        <div key="empty-lead" className="guess-row">
+            <span className="guess-row-label"></span>
+            <div className="guess-tiles">
+                {Array.from({ length: wl }, (_, i) => (
+                    <div key={i} className="tile empty-slot" />
+                ))}
             </div>
-        );
-    }
+        </div>
+    );
 
     return (
-        <div className="board-wrap">
+        <div className="board-wrap" style={{ overflowY: 'auto' }}>
             <div className="board shared-board">
                 {rows}
+                <div ref={bottomRef} style={{ height: 1, flexShrink: 0 }} />
             </div>
         </div>
     );

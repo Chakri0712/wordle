@@ -15,7 +15,7 @@ function createRoom(hostId, playerName) {
         roomCode,
         hostId,
         players: [{ id: hostId, name: playerName, score: 0, connected: true, surrendered: false }],
-        settings: { totalRounds: 5, timerSeconds: 15, difficulty: 'easy', wordLength: 5 },
+        settings: { totalRounds: 5, timerSeconds: 15, roundMinutes: 15, difficulty: 'easy', wordLength: 5 },
         status: 'lobby',
         currentRound: 0,
         currentWord: null,
@@ -27,6 +27,8 @@ function createRoom(hostId, playerName) {
         timeoutCount: {},
         eliminatedThisRound: new Set(),
         roundGuessCount: {},
+        roundTimer: null,
+        roundEndTime: null,
     };
     return rooms[roomCode];
 }
@@ -105,12 +107,19 @@ async function startRound(roomCode, io) {
         room.roundGuessCount[p.id] = 0;
         room.playerGuesses[p.id] = [];
     });
-    // Shared guess pool: numConnectedPlayers × 5
+    // Infinite guesses limited by time
     const eligible = room.players.filter(p => p.connected);
-    room.totalGuessLimit = eligible.length * 5;
     room.turnOrder = shuffle(eligible.map(p => p.id));
     room.currentTurnIndex = 0;
     room.status = 'playing';
+
+    // Set Global Round Master Timer
+    clearTimeout(room.roundTimer);
+    const msLimit = (room.settings.roundMinutes || 15) * 60 * 1000;
+    room.roundEndTime = Date.now() + msLimit;
+    room.roundTimer = setTimeout(() => {
+        endRound(roomCode, null, io); // Global time ran out, nobody wins
+    }, msLimit);
 
     io.to(roomCode).emit('new_round', {
         roundNumber: room.currentRound,
@@ -118,7 +127,7 @@ async function startRound(roomCode, io) {
         turnOrder: room.turnOrder,
         players: room.players,
         wordLength: room.settings.wordLength,
-        totalGuessLimit: room.totalGuessLimit,
+        roundEndTime: room.roundEndTime,
     });
 
     // Delay scheduleTurn so clients have time to navigate to game page and register listeners
@@ -151,8 +160,8 @@ function getCurrentPlayerId(room) {
         const idx = room.currentTurnIndex % len;
         const pid = room.turnOrder[idx];
         const player = room.players.find(p => p.id === pid);
-        // Skip disconnected, surrendered, or timeout-eliminated players
-        if (player && player.connected && !player.surrendered && !room.eliminatedThisRound.has(pid)) {
+        // Skip disconnected or surrendered players (no timeout eliminations in infinite mode)
+        if (player && player.connected && !player.surrendered) {
             return pid;
         }
         room.currentTurnIndex = (room.currentTurnIndex + 1) % len;
@@ -166,11 +175,7 @@ function handleTimeout(roomCode, playerId, io) {
     room.timeoutCount[playerId] = (room.timeoutCount[playerId] || 0) + 1;
     io.to(roomCode).emit('turn_timeout', { playerId });
 
-    if (room.timeoutCount[playerId] >= 3) {
-        room.eliminatedThisRound.add(playerId);
-        io.to(roomCode).emit('player_eliminated', { playerId });
-    }
-
+    // Removed 3-timeout elimination for infinite round mode
     room.currentTurnIndex = (room.currentTurnIndex + 1) % room.turnOrder.length;
 
     const stillIn = getStillIn(room);
@@ -184,7 +189,7 @@ function handleTimeout(roomCode, playerId, io) {
 function getStillIn(room) {
     return room.turnOrder.filter(pid => {
         const p = room.players.find(pl => pl.id === pid);
-        return p && p.connected && !p.surrendered && !room.eliminatedThisRound.has(pid);
+        return p && p.connected && !p.surrendered;
     });
 }
 
@@ -202,6 +207,11 @@ async function submitGuess(roomCode, playerId, guess, io) {
 
     const valid = await isValidWord(upperGuess);
     if (!valid) return { error: 'Not a valid word.' };
+
+    const isDuplicate = room.guesses.some(g => g.guess.toUpperCase() === upperGuess);
+    if (isDuplicate) {
+        return { error: 'Word already guessed this round.' };
+    }
 
     clearTimeout(room.turnTimer);
     room.timeoutCount[playerId] = 0;
@@ -230,11 +240,6 @@ async function submitGuess(roomCode, playerId, guess, io) {
     }
 
     room.currentTurnIndex = (room.currentTurnIndex + 1) % room.turnOrder.length;
-
-    // End round when shared guess pool is exhausted
-    if (room.guesses.length >= room.totalGuessLimit) {
-        return endRound(roomCode, null, io);
-    }
 
     const stillIn = getStillIn(room);
     if (stillIn.length === 0) {
@@ -270,6 +275,8 @@ function endRound(roomCode, winnerId, io) {
     const room = rooms[roomCode];
     if (!room) return;
     clearTimeout(room.turnTimer);
+    clearTimeout(room.roundTimer);
+    room.roundEndTime = null;
     room.status = 'round_over';
 
     const scores = room.players.map(p => ({ id: p.id, name: p.name, score: p.score }));
@@ -343,7 +350,14 @@ function removePlayer(roomCode, playerId, io) {
         if (activeId === playerId) {
             clearTimeout(room.turnTimer);
             room.currentTurnIndex = (room.currentTurnIndex + 1) % room.turnOrder.length;
-            scheduleTurn(roomCode, io);
+
+            // Check if anyone is still in before scheduling
+            const stillIn = getStillIn(room);
+            if (stillIn.length === 0) {
+                endRound(roomCode, null, io);
+            } else {
+                scheduleTurn(roomCode, io);
+            }
         }
     }
 }

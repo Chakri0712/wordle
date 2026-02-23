@@ -29,11 +29,13 @@ export default function Game() {
 
     // All guesses in chronological order (my own + other players')
     const [sharedGuesses, setSharedGuesses] = useState([]);
-    const [totalGuessLimit, setTotalGuessLimit] = useState((initPlayers.length || 2) * 5);
+
+    const [globalTimeLeft, setGlobalTimeLeft] = useState(null);
 
     const [currentInput, setCurrentInput] = useState('');
     const [activePlayerId, setActivePlayerId] = useState(null);
     const [isMyTurn, setIsMyTurn] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
     const [timeLeft, setTimeLeft] = useState(null);
     const [timerSeconds, setTimerSeconds] = useState(initSettings.timerSeconds || 15);
     const [shaking, setShaking] = useState(false);
@@ -44,6 +46,7 @@ export default function Game() {
     const [roundCountdown, setRoundCountdown] = useState(null);
     const [showRules, setShowRules] = useState(false);
     const timerRef = useRef(null);
+    const globalTimerRef = useRef(null);
     const cdRef = useRef(null);
 
     const isHost = myId === hostId;
@@ -73,6 +76,32 @@ export default function Game() {
         setTimeLeft(null);
     }
 
+    function startGlobalCountdown(endTimeMs) {
+        clearInterval(globalTimerRef.current);
+        if (!endTimeMs) {
+            setGlobalTimeLeft(null);
+            return;
+        }
+
+        const updateTimer = () => {
+            const msLeft = endTimeMs - Date.now();
+            if (msLeft <= 0) {
+                clearInterval(globalTimerRef.current);
+                setGlobalTimeLeft(0);
+            } else {
+                setGlobalTimeLeft(Math.ceil(msLeft / 1000));
+            }
+        };
+
+        updateTimer();
+        globalTimerRef.current = setInterval(updateTimer, 1000);
+    }
+
+    function stopGlobalCountdown() {
+        clearInterval(globalTimerRef.current);
+        setGlobalTimeLeft(null);
+    }
+
     function updateKeyColors(guess, colors) {
         setKeyColors(prev => {
             const updated = { ...prev };
@@ -94,35 +123,39 @@ export default function Game() {
         if (settings.totalRounds) setTotalRounds(settings.totalRounds);
         if (settings.wordLength) setWordLength(settings.wordLength);
 
-        socket.on('new_round', ({ roundNumber: rn, totalRounds: tr, turnOrder, players: ps, wordLength: wl, totalGuessLimit: tgl }) => {
+        socket.on('new_round', ({ roundNumber: rn, totalRounds: tr, turnOrder, players: ps, wordLength: wl, roundEndTime: ret }) => {
             setRoundNumber(rn);
             setTotalRounds(tr);
             if (wl) setWordLength(wl);
-            if (tgl) setTotalGuessLimit(tgl);
             setSharedGuesses([]);
             setCurrentInput('');
+            setIsSubmitting(false);
             setKeyColors({});
             setRoundOverData(null);
-            setActivePlayerId(null); // turn_changed (fired 350ms later) sets the real value
+            setActivePlayerId(null);
             if (ps) setPlayers(ps);
             stopCountdown();
+            startGlobalCountdown(ret);
         });
 
         socket.on('your_turn', ({ timeLimit }) => {
             setIsMyTurn(true);
             setTimerSeconds(timeLimit);
             startCountdown(timeLimit);
+            setCurrentInput('');
         });
 
         socket.on('turn_changed', ({ activePlayerId: aid }) => {
             setActivePlayerId(aid);
             if (aid !== myId) {
                 setIsMyTurn(false);
+                setCurrentInput('');
                 stopCountdown();
             }
         });
 
         socket.on('guess_result', ({ playerId, guess, colors }) => {
+            setIsSubmitting(false);
             const playerName = playerId === myId
                 ? (myName || 'You')
                 : playersRef.current.find(p => p.id === playerId)?.name || 'Player';
@@ -137,7 +170,7 @@ export default function Game() {
         socket.on('turn_timeout', ({ playerId }) => {
             const p = playersRef.current.find(pl => pl.id === playerId);
             addToast(`⏰ Time's up! ${p?.name || 'Player'} skipped.`);
-            if (playerId === myId) { setIsMyTurn(false); stopCountdown(); }
+            if (playerId === myId) { setIsMyTurn(false); setCurrentInput(''); stopCountdown(); setIsSubmitting(false); }
         });
 
         socket.on('player_surrendered', ({ playerId }) => {
@@ -153,6 +186,7 @@ export default function Game() {
 
         socket.on('round_over', ({ winnerId, word, scores, roundNumber: rn, totalRounds: tr }) => {
             stopCountdown();
+            stopGlobalCountdown();
             setIsMyTurn(false);
             setPlayers(prev => prev.map(p => {
                 const s = scores.find(sc => sc.id === p.id);
@@ -172,6 +206,7 @@ export default function Game() {
 
         socket.on('game_over', ({ finalScores, winnerId }) => {
             stopCountdown();
+            stopGlobalCountdown();
             setGameOverData({ finalScores, winnerId });
         });
 
@@ -196,6 +231,7 @@ export default function Game() {
         });
 
         socket.on('error', ({ message }) => {
+            setIsSubmitting(false);
             addToast(`❌ ${message}`);
             if (message.includes('Room not found')) navigate('/');
         });
@@ -223,14 +259,16 @@ export default function Game() {
             socket.off('error');
             socket.off('game_started');
             clearInterval(timerRef.current);
+            clearInterval(globalTimerRef.current);
             clearInterval(cdRef.current);
         };
     }, [roomCode, myId]);
 
     const submitGuess = useCallback(() => {
-        if (!isMyTurn || currentInput.length !== wordLength) return;
+        if (!isMyTurn || currentInput.length !== wordLength || isSubmitting) return;
+        setIsSubmitting(true);
         socket.emit('submit_guess', { roomCode, guess: currentInput });
-    }, [isMyTurn, currentInput, roomCode, wordLength]);
+    }, [isMyTurn, currentInput, roomCode, wordLength, isSubmitting]);
 
     const handleKey = useCallback((key) => {
         if (!isMyTurn || roundOverData || gameOverData) return;
@@ -275,6 +313,14 @@ export default function Game() {
             {/* Top bar */}
             <div className="game-topbar">
                 <span className="topbar-round">Round <strong>{roundNumber}</strong> of <strong>{totalRounds}</strong></span>
+
+                {/* Global Master Timer */}
+                {globalTimeLeft !== null && !roundOverData && !gameOverData && (
+                    <div style={{ fontWeight: 900, fontSize: '1.2rem', color: '#f5c518', letterSpacing: '1px' }}>
+                        {Math.floor(globalTimeLeft / 60)}:{(globalTimeLeft % 60).toString().padStart(2, '0')}
+                    </div>
+                )}
+
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                     {isMyTurn && timeLeft !== null && (
                         <Timer timeLeft={timeLeft} total={timerSeconds} />
@@ -321,7 +367,6 @@ export default function Game() {
                     {/* Board */}
                     <Board
                         sharedGuesses={sharedGuesses}
-                        totalGuessLimit={totalGuessLimit}
                         wordLength={wordLength}
                         currentInput={currentInput}
                         myId={myId}

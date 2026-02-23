@@ -11,7 +11,7 @@ export default function Lobby() {
 
     const myId = sessionStorage.getItem('playerId') || socket.id;
     const initPlayers = JSON.parse(sessionStorage.getItem('roomPlayers') || '[]');
-    const initSettings = JSON.parse(sessionStorage.getItem('roomSettings') || '{"totalRounds":5,"timerSeconds":15,"difficulty":"easy","wordLength":5}');
+    const initSettings = JSON.parse(sessionStorage.getItem('roomSettings') || '{"totalRounds":5,"timerSeconds":15,"roundMinutes":15,"difficulty":"easy","wordLength":5}');
 
     const [players, setPlayers] = useState(initPlayers);
     const [settings, setSettings] = useState(initSettings);
@@ -36,10 +36,11 @@ export default function Lobby() {
         socket.on('host_changed', ({ newHostId }) => {
             setHostId(newHostId);
         });
-        socket.on('game_started', ({ wordLength: wl, totalRounds: tr }) => {
+        socket.on('game_started', ({ wordLength: wl, totalRounds: tr, roundMinutes: rm }) => {
             const updated = { ...settings };
             if (wl) updated.wordLength = wl;
             if (tr) updated.totalRounds = tr;
+            if (rm) updated.roundMinutes = rm;
             sessionStorage.setItem('roomSettings', JSON.stringify(updated));
             navigate(`/game/${roomCode}`);
         });
@@ -59,6 +60,7 @@ export default function Lobby() {
             roomCode,
             rounds: updated.totalRounds,
             timerSeconds: updated.timerSeconds,
+            roundMinutes: updated.roundMinutes,
             difficulty: updated.difficulty,
             wordLength: updated.wordLength,
         });
@@ -138,7 +140,15 @@ export default function Lobby() {
                                 </select>
                             </div>
                             <div className="setting-row">
-                                <label>Turn Timer</label>
+                                <label>Round Time (Global)</label>
+                                <select id="round-time-select" value={settings.roundMinutes || 15} onChange={e => handleSetting('roundMinutes', Number(e.target.value))}>
+                                    <option value={5}>5 minutes</option>
+                                    <option value={10}>10 minutes</option>
+                                    <option value={15}>15 minutes</option>
+                                </select>
+                            </div>
+                            <div className="setting-row">
+                                <label>Turn Timer (Per Player)</label>
                                 <select id="timer-select" value={settings.timerSeconds} onChange={e => handleSetting('timerSeconds', Number(e.target.value))}>
                                     <option value={10}>10 seconds</option>
                                     <option value={15}>15 seconds</option>
@@ -161,7 +171,8 @@ export default function Lobby() {
                             <div className="settings-display">
                                 <div>Word Length: <strong>{settings.wordLength || 5} letters</strong></div>
                                 <div>Rounds: <strong>{settings.totalRounds}</strong></div>
-                                <div>Timer: <strong>{settings.timerSeconds}s</strong></div>
+                                <div>Round Time: <strong>{settings.roundMinutes || 15}m</strong></div>
+                                <div>Turn Timer: <strong>{settings.timerSeconds}s</strong></div>
                             </div>
                             <p className="waiting-text">⏳ Waiting for host to start the game…</p>
                         </>
